@@ -1,14 +1,21 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 export default function LoginPage() {
-  const [form, setForm] = useState({ email: '', password: '' });
+  const [form, setForm] = useState({ email: 'rakaraka48246@gmail.com', password: '123' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const router = useRouter();
+
+  useEffect(() => {
+    const saved = localStorage.getItem('user');
+    if (saved) {
+      router.replace('/');
+    }
+  }, [router]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -31,11 +38,11 @@ export default function LoginPage() {
 
       // Save user session in localStorage
       localStorage.setItem('user', JSON.stringify(data.user));
-      setSuccess('Login berhasil! Mengalihkan ke dashboard profil...');
+      setSuccess('Login berhasil! Mengalihkan ke beranda...');
 
       setTimeout(() => {
-        router.push('/profile');
-      }, 1000);
+        router.push('/');
+      }, 800);
     } catch (err) {
       setError(err.message);
     } finally {

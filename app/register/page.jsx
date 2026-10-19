@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -9,6 +9,13 @@ export default function RegisterPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const router = useRouter();
+
+  useEffect(() => {
+    const saved = localStorage.getItem('user');
+    if (saved) {
+      router.replace('/');
+    }
+  }, [router]);
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -39,10 +46,12 @@ export default function RegisterPage() {
         throw new Error(data.message || 'Registrasi gagal');
       }
 
-      setSuccess('Registrasi berhasil! Mengalihkan ke halaman login...');
+      // Save user session and direct to home
+      localStorage.setItem('user', JSON.stringify(data.user));
+      setSuccess('Registrasi berhasil! Selamat datang, mengalihkan ke beranda...');
       setTimeout(() => {
-        router.push('/login');
-      }, 1500);
+        router.push('/');
+      }, 1000);
     } catch (err) {
       setError(err.message);
     } finally {

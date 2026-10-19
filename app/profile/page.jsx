@@ -33,18 +33,16 @@ export default function ProfilePage() {
   useEffect(() => {
     // Check user login
     const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch (e) {
-        setUser(null);
-      }
-    } else {
-      // If not logged in, demo user or redirect
-      setUser({
-        name: 'Administrator Toko',
-        email: 'admin@clothstore.com',
-      });
+    if (!savedUser) {
+      router.replace('/login');
+      return;
+    }
+
+    try {
+      setUser(JSON.parse(savedUser));
+    } catch (e) {
+      router.replace('/login');
+      return;
     }
 
     // Load cart
@@ -56,7 +54,7 @@ export default function ProfilePage() {
     }
 
     fetchProducts();
-  }, []);
+  }, [router]);
 
   const handleLogout = () => {
     localStorage.removeItem('user');
@@ -93,6 +91,17 @@ export default function ProfilePage() {
 
   const totalStock = products.reduce((acc, curr) => acc + (Number(curr.stock) || 0), 0);
   const totalCategories = new Set(products.map((p) => p.category)).size;
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-sm font-medium text-slate-500">Memeriksa status login...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">

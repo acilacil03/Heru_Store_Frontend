@@ -68,6 +68,17 @@ async function seed() {
       console.log('Data dummy produk berhasil dimasukkan.');
     }
 
+    // Seed User Akun Default
+    const defaultUserEmail = 'rakaraka48246@gmail.com';
+    const existingUser = await query('SELECT id FROM users WHERE email = ?', [defaultUserEmail]);
+    if (!existingUser || existingUser.length === 0) {
+      await query(
+        'INSERT INTO users (name, email, password) VALUES (?, ?, ?)',
+        ['Raka', defaultUserEmail, '123']
+      );
+      console.log(`User default ${defaultUserEmail} berhasil ditambahkan.`);
+    }
+
     console.log('Seeding Berhasil!');
     process.exit(0);
   } catch (err) {

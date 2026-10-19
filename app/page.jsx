@@ -1,11 +1,14 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import NavBar from '@/components/NavBar';
 import ProductCart from '@/components/ProductCart';
 import ProductModal from '@/components/ProductModal';
 import CartDrawer from '@/components/CartDrawer';
 
 export default function HomePage() {
+  const router = useRouter();
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [cart, setCart] = useState([]);
@@ -42,6 +45,12 @@ export default function HomePage() {
   };
 
   useEffect(() => {
+    const savedUser = localStorage.getItem('user');
+    if (!savedUser) {
+      router.replace('/login');
+      return;
+    }
+    setCheckingAuth(false);
     fetchProducts();
     // Load existing cart from localStorage if any
     const savedCart = localStorage.getItem('cart');
@@ -50,7 +59,7 @@ export default function HomePage() {
         setCart(JSON.parse(savedCart));
       } catch (e) {}
     }
-  }, []);
+  }, [router]);
 
   const saveCart = (newCart) => {
     setCart(newCart);
@@ -121,6 +130,17 @@ export default function HomePage() {
   });
 
   const cartTotalQty = cart.reduce((a, c) => a + c.qty, 0);
+
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-sm font-medium text-slate-500">Memeriksa status login...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
