@@ -159,18 +159,16 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div>
-              <div className="flex items-center gap-2 text-xs font-medium text-neutral-500 mb-2">
+              <div className="flex items-center gap-2 text-xs font-medium text-neutral-400 mb-2">
                 <span>Koleksi Terkini</span>
                 <span>•</span>
-                <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 text-[11px]">
-                  Backend Express (Port 5000)
-                </span>
+                <span>Season 2026</span>
               </div>
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-neutral-950">
                 Katalog Pakaian & Streetwear
               </h1>
               <p className="mt-2 text-xs sm:text-sm text-neutral-600 max-w-xl leading-relaxed">
-                Koleksi kaos oversize, kemeja kasual, celana, jaket, dan outerwear. Terhubung langsung dengan server REST API Node.js & database MySQL.
+                Temukan pilihan pakaian berkualitas mulai dari kaos oversize, kemeja kasual, celana, hingga outerwear untuk melengkapi gayamu setiap hari.
               </p>
             </div>
 
@@ -304,7 +302,7 @@ export default function HomePage() {
       <footer className="bg-white border-t border-neutral-200 py-6 text-center text-xs text-neutral-500">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <p className="font-medium text-neutral-700">CLOTH STUDIO — Katalog Manajemen Baju</p>
-          <p className="text-neutral-400">Backend API Terhubung: http://localhost:5000</p>
+          <p className="text-neutral-400">© 2026 Cloth Studio. All rights reserved.</p>
         </div>
       </footer>
 

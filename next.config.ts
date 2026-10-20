@@ -15,10 +15,22 @@ const nextConfig: NextConfig = {
       },
     },
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+      },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
+    ],
+  },
   async rewrites() {
     return [
       {
-        source: "/api/:path*",
+        source: "/api/:path((?!upload|cloudinary-config).*)",
         destination: `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/:path*`,
       },
     ];

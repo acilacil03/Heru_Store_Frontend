@@ -2,12 +2,10 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { API_BASE_URL } from '@/lib/api';
 
 export default function NavBar({ cartCount = 0, onOpenCart, onSearch }) {
   const [user, setUser] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [backendOnline, setBackendOnline] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
@@ -19,11 +17,6 @@ export default function NavBar({ cartCount = 0, onOpenCart, onSearch }) {
         setUser(null);
       }
     }
-
-    // Ping backend health
-    fetch(`${API_BASE_URL}/`)
-      .then((r) => setBackendOnline(r.ok))
-      .catch(() => setBackendOnline(false));
   }, []);
 
   const handleLogout = () => {
@@ -51,7 +44,7 @@ export default function NavBar({ cartCount = 0, onOpenCart, onSearch }) {
             </div>
             <div className="flex flex-col">
               <span className="font-bold text-base tracking-tight text-neutral-950 flex items-center gap-1.5">
-                CLOTH<span className="font-light text-neutral-500">STUDIO</span>
+                Heru<span className="font-light text-neutral-500">Store</span>
               </span>
               <span className="text-[10px] text-neutral-400 font-medium tracking-wider uppercase -mt-0.5">
                 Katalog Produk
@@ -92,19 +85,6 @@ export default function NavBar({ cartCount = 0, onOpenCart, onSearch }) {
 
           {/* Navigation Actions */}
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Backend Connectivity Indicator */}
-            <div
-              className={`hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium border ${
-                backendOnline
-                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                  : 'bg-rose-50 text-rose-700 border-rose-200'
-              }`}
-              title={backendOnline ? 'Terhubung ke Backend port 5000' : 'Backend port 5000 tidak terdeteksi'}
-            >
-              <span className={`w-1.5 h-1.5 rounded-full ${backendOnline ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
-              <span>{backendOnline ? 'API :5000' : 'Offline'}</span>
-            </div>
-
             <Link
               href="/"
               className="text-xs sm:text-sm font-medium text-neutral-600 hover:text-neutral-950 px-2.5 py-1.5 rounded-md hover:bg-neutral-100 transition-colors hidden sm:inline-block"
