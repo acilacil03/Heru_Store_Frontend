@@ -1,10 +1,11 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import NavBar from '@/components/NavBar';
 import ProductCart from '@/components/ProductCart';
 import ProductModal from '@/components/ProductModal';
 import CartDrawer from '@/components/CartDrawer';
+import { getProducts, deleteProduct } from '@/lib/api';
 
 export default function HomePage() {
   const router = useRouter();
@@ -19,30 +20,29 @@ export default function HomePage() {
   const [selectedCategory, setSelectedCategory] = useState('Semua');
   const [toastMessage, setToastMessage] = useState('');
 
-  const categories = ['Semua', 'Kaos', 'Kemeja', 'Jaket', 'Sweater', 'Celana'];
+  const categories = ['Semua', 'Kaos', 'Kemeja', 'Jaket', 'Sweater', 'Celana', 'Aksesoris'];
 
   const showToast = (msg) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(''), 3000);
   };
 
-  const fetchProducts = async () => {
+  const fetchProductsList = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/product');
-      const data = await res.json();
+      const data = await getProducts();
       if (Array.isArray(data)) {
         setProducts(data);
       } else {
         setProducts([]);
       }
     } catch (err) {
-      console.error('Error fetching products:', err);
+      console.error('Error fetching products from backend:', err);
       setProducts([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
@@ -51,15 +51,15 @@ export default function HomePage() {
       return;
     }
     setCheckingAuth(false);
-    fetchProducts();
-    // Load existing cart from localStorage if any
+    fetchProductsList();
+
     const savedCart = localStorage.getItem('cart');
     if (savedCart) {
       try {
         setCart(JSON.parse(savedCart));
       } catch (e) {}
     }
-  }, [router]);
+  }, [router, fetchProductsList]);
 
   const saveCart = (newCart) => {
     setCart(newCart);
@@ -75,7 +75,7 @@ export default function HomePage() {
       updated = [...cart, { ...product, qty: 1 }];
     }
     saveCart(updated);
-    showToast(`"${product.name}" ditambahkan ke keranjang!`);
+    showToast(`"${product.name}" ditambahkan ke keranjang`);
   };
 
   const handleUpdateQty = (id, delta) => {
@@ -101,17 +101,13 @@ export default function HomePage() {
   };
 
   const handleDeleteProduct = async (id) => {
-    if (confirm('Yakin ingin menghapus produk ini dari database?')) {
+    if (confirm('Hapus produk ini dari database backend?')) {
       try {
-        const res = await fetch(`/api/product?id=${id}`, { method: 'DELETE' });
-        if (res.ok) {
-          showToast('Produk berhasil dihapus!');
-          fetchProducts();
-        } else {
-          alert('Gagal menghapus produk');
-        }
+        await deleteProduct(id);
+        showToast('Produk berhasil dihapus dari database.');
+        fetchProductsList();
       } catch (e) {
-        alert('Terjadi kesalahan saat menghapus produk');
+        alert(e.message || 'Gagal menghapus produk');
       }
     }
   };
@@ -133,17 +129,17 @@ export default function HomePage() {
 
   if (checkingAuth) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-sm font-medium text-slate-500">Memeriksa status login...</p>
+      <div className="min-h-screen flex items-center justify-center bg-neutral-50">
+        <div className="flex flex-col items-center gap-2">
+          <div className="w-6 h-6 border-2 border-neutral-900 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-xs text-neutral-500 font-medium">Memeriksa sesi pengguna...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
+    <div className="min-h-screen bg-neutral-50/50 flex flex-col text-neutral-900">
       <NavBar
         cartCount={cartTotalQty}
         onOpenCart={() => setIsCartOpen(true)}
@@ -152,46 +148,63 @@ export default function HomePage() {
 
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3 animate-bounce">
-          <svg className="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-          </svg>
-          <span className="text-sm font-semibold">{toastMessage}</span>
+        <div className="fixed bottom-5 right-5 z-50 bg-neutral-900 text-white px-4 py-2.5 rounded-lg shadow-lg flex items-center gap-2.5 text-xs font-medium transition-all">
+          <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+          <span>{toastMessage}</span>
         </div>
       )}
 
-      {/* Hero Header */}
-      <section className="bg-gradient-to-b from-blue-900 via-indigo-900 to-slate-900 text-white py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]" />
-        <div className="max-w-7xl mx-auto relative z-10">
-          <div className="max-w-3xl">
-            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 text-xs font-semibold mb-4 border border-blue-400/20">
-              ✨ Koleksi Fashion Berkualitas & Terjangkau
-            </span>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight">
-              Katalog <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">Toko Baju</span>
-            </h1>
-            <p className="mt-3 text-slate-300 text-sm sm:text-base max-w-xl leading-relaxed">
-              Temukan kaos oversize, kemeja kasual, jaket denim, celana, dan sweater terbaik untuk gayamu setiap hari.
-            </p>
+      {/* Clean Modern Header Section */}
+      <section className="bg-white border-b border-neutral-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div>
+              <div className="flex items-center gap-2 text-xs font-medium text-neutral-500 mb-2">
+                <span>Koleksi Terkini</span>
+                <span>•</span>
+                <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 text-[11px]">
+                  Backend Express (Port 5000)
+                </span>
+              </div>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-neutral-950">
+                Katalog Pakaian & Streetwear
+              </h1>
+              <p className="mt-2 text-xs sm:text-sm text-neutral-600 max-w-xl leading-relaxed">
+                Koleksi kaos oversize, kemeja kasual, celana, jaket, dan outerwear. Terhubung langsung dengan server REST API Node.js & database MySQL.
+              </p>
+            </div>
+
+            {/* Quick stats counter */}
+            <div className="flex items-center gap-6 border-t md:border-t-0 md:border-l border-neutral-200 pt-4 md:pt-0 md:pl-6 text-xs text-neutral-500">
+              <div>
+                <p className="text-[10px] uppercase font-semibold text-neutral-400 tracking-wider">Total Produk</p>
+                <p className="text-xl font-bold text-neutral-900 mt-0.5">{products.length}</p>
+              </div>
+              <div>
+                <p className="text-[10px] uppercase font-semibold text-neutral-400 tracking-wider">Kategori</p>
+                <p className="text-xl font-bold text-neutral-900 mt-0.5">
+                  {new Set(products.map((p) => p.category)).size}
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Main Content Area */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
-        {/* Controls Bar: Categories & Add Button */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        {/* Controls: Categories & Add Button */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           {/* Category Tabs */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-none">
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
             {categories.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all cursor-pointer ${
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
                   selectedCategory === cat
-                    ? 'bg-blue-600 text-white shadow-md shadow-blue-500/25'
-                    : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                    ? 'bg-neutral-900 text-white'
+                    : 'bg-white text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 border border-neutral-200'
                 }`}
               >
                 {cat}
@@ -205,19 +218,19 @@ export default function HomePage() {
               setSelectedProduct(null);
               setIsModalOpen(true);
             }}
-            className="flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-md shadow-emerald-600/20 active:scale-95 transition-all cursor-pointer shrink-0"
+            className="flex items-center justify-center gap-1.5 bg-neutral-900 hover:bg-neutral-800 text-white px-3.5 py-1.5 rounded-lg font-medium text-xs sm:text-sm transition-colors cursor-pointer shrink-0 shadow-2xs"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
             </svg>
-            <span>+ Tambah Baju Baru</span>
+            <span>Tambah Produk</span>
           </button>
         </div>
 
-        {/* Status / Results Count */}
-        <div className="flex items-center justify-between mb-6">
-          <p className="text-sm font-medium text-slate-500">
-            Menampilkan <span className="font-bold text-slate-800">{filteredProducts.length}</span> produk
+        {/* Filter Summary */}
+        <div className="flex items-center justify-between mb-5">
+          <p className="text-xs text-neutral-500 font-medium">
+            Menampilkan <span className="font-semibold text-neutral-900">{filteredProducts.length}</span> produk
             {selectedCategory !== 'Semua' && ` di kategori "${selectedCategory}"`}
             {searchQuery && ` untuk "${searchQuery}"`}
           </p>
@@ -227,7 +240,7 @@ export default function HomePage() {
                 setSelectedCategory('Semua');
                 setSearchQuery('');
               }}
-              className="text-xs text-blue-600 hover:underline font-semibold cursor-pointer"
+              className="text-xs text-neutral-700 hover:text-neutral-950 font-medium underline underline-offset-2 cursor-pointer"
             >
               Reset Filter
             </button>
@@ -236,41 +249,41 @@ export default function HomePage() {
 
         {/* Loading State */}
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
             {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
-              <div key={n} className="bg-white rounded-2xl p-4 border border-slate-100 shadow-xs animate-pulse space-y-4">
-                <div className="aspect-square bg-slate-200 rounded-xl" />
-                <div className="h-4 bg-slate-200 rounded w-3/4" />
-                <div className="h-3 bg-slate-100 rounded w-1/2" />
-                <div className="h-8 bg-slate-200 rounded-xl" />
+              <div key={n} className="bg-white rounded-xl p-4 border border-neutral-200 animate-pulse space-y-3">
+                <div className="aspect-square bg-neutral-200 rounded-lg" />
+                <div className="h-4 bg-neutral-200 rounded w-2/3" />
+                <div className="h-3 bg-neutral-150 rounded w-1/2" />
+                <div className="h-7 bg-neutral-200 rounded-lg" />
               </div>
             ))}
           </div>
         ) : filteredProducts.length === 0 ? (
           /* Empty State */
-          <div className="bg-white rounded-3xl p-12 text-center border border-slate-100 shadow-sm max-w-md mx-auto my-12">
-            <div className="w-16 h-16 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="bg-white rounded-xl p-12 text-center border border-neutral-200 max-w-sm mx-auto my-12">
+            <div className="w-12 h-12 rounded-full bg-neutral-100 text-neutral-400 flex items-center justify-center mx-auto mb-3">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
-            <h3 className="text-lg font-bold text-slate-800">Tidak ada produk ditemukan</h3>
-            <p className="text-xs text-slate-500 mt-1">
-              Coba gunakan kata kunci lain atau tambahkan produk baru ke dalam katalog.
+            <h3 className="text-sm font-semibold text-neutral-900">Produk Tidak Ditemukan</h3>
+            <p className="text-xs text-neutral-500 mt-1">
+              Tidak ada pakaian yang cocok dengan filter atau kata kunci saat ini.
             </p>
             <button
               onClick={() => {
                 setSelectedCategory('Semua');
                 setSearchQuery('');
               }}
-              className="mt-5 px-5 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 transition-colors"
+              className="mt-4 px-4 py-1.5 bg-neutral-900 text-white rounded-lg text-xs font-medium hover:bg-neutral-800 transition-colors cursor-pointer"
             >
-              Tampilkan Semua Produk
+              Tampilkan Semua
             </button>
           </div>
         ) : (
           /* Product Grid */
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
             {filteredProducts.map((p) => (
               <ProductCart
                 key={p.id}
@@ -288,9 +301,11 @@ export default function HomePage() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-slate-200 py-8 text-center text-xs text-slate-500">
-        <p className="font-semibold text-slate-700">© 2026 Cloth Store — CRUD Catalog Application</p>
-        <p className="mt-1">Dibuat untuk Manajemen Aplikasi & Pemrograman Web</p>
+      <footer className="bg-white border-t border-neutral-200 py-6 text-center text-xs text-neutral-500">
+        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+          <p className="font-medium text-neutral-700">CLOTH STUDIO — Katalog Manajemen Baju</p>
+          <p className="text-neutral-400">Backend API Terhubung: http://localhost:5000</p>
+        </div>
       </footer>
 
       {/* Modals & Drawer */}
@@ -299,8 +314,8 @@ export default function HomePage() {
         onClose={() => setIsModalOpen(false)}
         product={selectedProduct}
         onSuccess={() => {
-          showToast(selectedProduct ? 'Produk berhasil diubah!' : 'Produk baru berhasil ditambahkan!');
-          fetchProducts();
+          showToast(selectedProduct ? 'Data produk berhasil diperbarui' : 'Produk baru berhasil ditambahkan');
+          fetchProductsList();
         }}
       />
 
