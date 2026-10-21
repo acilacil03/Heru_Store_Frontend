@@ -52,7 +52,7 @@ export default function LoginPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
               </svg>
             </div>
-            <span className="font-bold text-base tracking-tight text-neutral-950">CLOTH STUDIO</span>
+            <span className="font-bold text-base tracking-tight text-neutral-950">Heru Store</span>
           </Link>
           <h2 className="text-xl font-bold text-neutral-900 mt-2">Selamat Datang</h2>
           <p className="text-xs text-neutral-500 mt-0.5">Masuk untuk mengelola katalog pakaian</p>

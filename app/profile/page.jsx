@@ -16,7 +16,7 @@ export default function ProfilePage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState('grid'); // 'grid' | 'table'
+  const [activeTab, setActiveTab] = useState('grid'); 
   const router = useRouter();
 
   const fetchProductsList = useCallback(async () => {
@@ -69,6 +69,7 @@ export default function ProfilePage() {
     }
     setCart(updated);
     localStorage.setItem('cart', JSON.stringify(updated));
+    setIsCartOpen(true);
   };
 
   const handleDeleteProduct = async (id) => {
@@ -105,6 +106,8 @@ export default function ProfilePage() {
     );
   }
 
+  const isAdmin = user?.role === 'admin';
+
   return (
     <div className="min-h-screen bg-neutral-50/50 flex flex-col text-neutral-900">
       <NavBar
@@ -118,16 +121,16 @@ export default function ProfilePage() {
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
             <div className="flex items-center gap-3.5">
               <div className="w-12 h-12 rounded-xl bg-neutral-900 text-white font-bold text-lg flex items-center justify-center shrink-0">
-                {user?.name ? user.name.charAt(0).toUpperCase() : 'A'}
+                {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h1 className="text-lg sm:text-xl font-bold text-neutral-900">{user?.name || 'Administrator'}</h1>
+                  <h1 className="text-lg sm:text-xl font-bold text-neutral-900">{user?.name || 'User'}</h1>
                   <span className="bg-neutral-100 text-neutral-700 border border-neutral-200 text-[10px] font-semibold px-2 py-0.5 rounded uppercase tracking-wider">
-                    Pengelola
+                    {isAdmin ? 'Admin' : 'Customer'}
                   </span>
                 </div>
-                <p className="text-xs text-neutral-500 mt-0.5">{user?.email || 'admin@clothstore.com'}</p>
+                <p className="text-xs text-neutral-500 mt-0.5">{user?.email || '-'}</p>
               </div>
             </div>
 
@@ -147,65 +150,73 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Quick Metrics */}
-          <div className="grid grid-cols-3 gap-4 mt-6 pt-5 border-t border-neutral-150">
-            <div>
-              <p className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold">Total Item</p>
-              <p className="text-xl sm:text-2xl font-bold text-neutral-900 mt-0.5">{products.length}</p>
+          {/* Quick Metrics (Hanya Admin) */}
+          {isAdmin && (
+            <div className="grid grid-cols-3 gap-4 mt-6 pt-5 border-t border-neutral-150">
+              <div>
+                <p className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold">Total Item</p>
+                <p className="text-xl sm:text-2xl font-bold text-neutral-900 mt-0.5">{products.length}</p>
+              </div>
+              <div>
+                <p className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold">Total Stok</p>
+                <p className="text-xl sm:text-2xl font-bold text-neutral-900 mt-0.5">{totalStock}</p>
+              </div>
+              <div>
+                <p className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold">Kategori</p>
+                <p className="text-xl sm:text-2xl font-bold text-neutral-900 mt-0.5">{totalCategories}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold">Total Stok</p>
-              <p className="text-xl sm:text-2xl font-bold text-neutral-900 mt-0.5">{totalStock}</p>
-            </div>
-            <div>
-              <p className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold">Kategori</p>
-              <p className="text-xl sm:text-2xl font-bold text-neutral-900 mt-0.5">{totalCategories}</p>
-            </div>
-          </div>
+          )}
         </div>
 
-        {/* Catalog Management Panel */}
+        {/* Catalog Management Panel / Pesanan User */}
         <div className="bg-white rounded-xl border border-neutral-200 p-6 sm:p-7 shadow-2xs">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
             <div>
-              <h2 className="text-base font-bold text-neutral-900">Manajemen Inventaris Pakaian</h2>
-              <p className="text-xs text-neutral-500 mt-0.5">Kelola data produk, update stok, harga, dan hapus dari backend</p>
+              <h2 className="text-base font-bold text-neutral-900">
+                {isAdmin ? 'Manajemen Inventaris Pakaian (Admin)' : 'Katalog Pakaian (Pesan Produk)'}
+              </h2>
+              <p className="text-xs text-neutral-500 mt-0.5">
+                {isAdmin ? 'Kelola data produk, update stok, harga, dan hapus dari backend' : 'Pilih pakaian yang ingin kamu pesan dan masukkan ke keranjang'}
+              </p>
             </div>
 
             <div className="flex items-center gap-2">
-              {/* Tab Switcher */}
-              <div className="bg-neutral-100 p-0.5 rounded-lg flex items-center text-xs font-medium border border-neutral-200">
-                <button
-                  onClick={() => setActiveTab('grid')}
-                  className={`px-3 py-1 rounded-md transition-colors cursor-pointer ${
-                    activeTab === 'grid' ? 'bg-white shadow-2xs text-neutral-900 font-semibold' : 'text-neutral-500 hover:text-neutral-900'
-                  }`}
-                >
-                  Grid
-                </button>
-                <button
-                  onClick={() => setActiveTab('table')}
-                  className={`px-3 py-1 rounded-md transition-colors cursor-pointer ${
-                    activeTab === 'table' ? 'bg-white shadow-2xs text-neutral-900 font-semibold' : 'text-neutral-500 hover:text-neutral-900'
-                  }`}
-                >
-                  Tabel
-                </button>
-              </div>
+              {isAdmin && (
+                <div className="bg-neutral-100 p-0.5 rounded-lg flex items-center text-xs font-medium border border-neutral-200">
+                  <button
+                    onClick={() => setActiveTab('grid')}
+                    className={`px-3 py-1 rounded-md transition-colors cursor-pointer ${
+                      activeTab === 'grid' ? 'bg-white shadow-2xs text-neutral-900 font-semibold' : 'text-neutral-500 hover:text-neutral-900'
+                    }`}
+                  >
+                    Grid
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('table')}
+                    className={`px-3 py-1 rounded-md transition-colors cursor-pointer ${
+                      activeTab === 'table' ? 'bg-white shadow-2xs text-neutral-900 font-semibold' : 'text-neutral-500 hover:text-neutral-900'
+                    }`}
+                  >
+                    Tabel
+                  </button>
+                </div>
+              )}
 
-              {/* Add Button */}
-              <button
-                onClick={() => {
-                  setSelectedProduct(null);
-                  setIsModalOpen(true);
-                }}
-                className="bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-medium px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5"
-              >
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-                </svg>
-                <span>Tambah Baju</span>
-              </button>
+              {isAdmin && (
+                <button
+                  onClick={() => {
+                    setSelectedProduct(null);
+                    setIsModalOpen(true);
+                  }}
+                  className="bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-medium px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                  </svg>
+                  <span>Tambah Baju</span>
+                </button>
+              )}
             </div>
           </div>
 
@@ -220,13 +231,14 @@ export default function ProfilePage() {
             />
           </div>
 
-          {/* Views: Grid or Table */}
-          {activeTab === 'grid' ? (
+          {/* Grid / Table View */}
+          {activeTab === 'grid' || !isAdmin ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
               {filteredProducts.map((p) => (
                 <ProductCart
                   key={p.id}
                   product={p}
+                  isAdmin={isAdmin}
                   onAddToCart={() => handleAddToCart(p)}
                   onEdit={() => {
                     setSelectedProduct(p);

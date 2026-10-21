@@ -1,6 +1,6 @@
 'use client';
 
-export default function ProductCart({ product, onAddToCart, onEdit, onDelete }) {
+export default function ProductCart({ product, isAdmin, onAddToCart, onEdit, onDelete }) {
   const formattedPrice = Number(product.price || 0).toLocaleString('id-ID');
   const imageUrl = product.image_url || 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=500';
   const inStock = Number(product.stock) > 0;
@@ -82,26 +82,29 @@ export default function ProductCart({ product, onAddToCart, onEdit, onDelete }) 
               <span>{inStock ? '+ Keranjang' : 'Stok Kosong'}</span>
             </button>
 
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={onEdit}
-                className="py-1.5 px-2 text-xs font-medium rounded-lg border border-neutral-200 text-neutral-700 hover:bg-neutral-50 hover:border-neutral-300 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                <svg className="w-3.5 h-3.5 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-                <span>Edit</span>
-              </button>
-              <button
-                onClick={onDelete}
-                className="py-1.5 px-2 text-xs font-medium rounded-lg border border-neutral-200 text-neutral-600 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50/50 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-                <span>Hapus</span>
-              </button>
-            </div>
+            {/* HANYA MUNCUL JIKA ADMIN */}
+            {isAdmin && (
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={onEdit}
+                  className="py-1.5 px-2 text-xs font-medium rounded-lg border border-neutral-200 text-neutral-700 hover:bg-neutral-50 hover:border-neutral-300 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <svg className="w-3.5 h-3.5 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  <span>Edit</span>
+                </button>
+                <button
+                  onClick={onDelete}
+                  className="py-1.5 px-2 text-xs font-medium rounded-lg border border-neutral-200 text-neutral-600 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50/50 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  <span>Hapus</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

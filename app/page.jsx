@@ -10,6 +10,7 @@ import { getProducts, deleteProduct } from '@/lib/api';
 export default function HomePage() {
   const router = useRouter();
   const [checkingAuth, setCheckingAuth] = useState(true);
+  const [user, setUser] = useState(null);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [cart, setCart] = useState([]);
@@ -50,6 +51,14 @@ export default function HomePage() {
       router.replace('/login');
       return;
     }
+    try {
+      const parsedUser = JSON.parse(savedUser);
+      setUser(parsedUser);
+    } catch (e) {
+      router.replace('/login');
+      return;
+    }
+
     setCheckingAuth(false);
     fetchProductsList();
 
@@ -112,7 +121,6 @@ export default function HomePage() {
     }
   };
 
-  // Filter products by category and search query
   const filteredProducts = products.filter((p) => {
     const matchesCategory =
       selectedCategory === 'Semua' ||
@@ -127,7 +135,7 @@ export default function HomePage() {
 
   const cartTotalQty = cart.reduce((a, c) => a + c.qty, 0);
 
-  if (checkingAuth) {
+  if (checkingAuth || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-neutral-50">
         <div className="flex flex-col items-center gap-2">
@@ -137,6 +145,9 @@ export default function HomePage() {
       </div>
     );
   }
+
+  // Pengecekan role admin
+  const isAdmin = user?.role === 'admin';
 
   return (
     <div className="min-h-screen bg-neutral-50/50 flex flex-col text-neutral-900">
@@ -154,7 +165,7 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Clean Modern Header Section */}
+      {/* Header Section */}
       <section className="bg-white border-b border-neutral-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
@@ -165,10 +176,12 @@ export default function HomePage() {
                 <span>Season 2026</span>
               </div>
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-neutral-950">
-                Katalog Pakaian & Streetwear
+                {isAdmin ? 'Manajemen Katalog Pakaian (Admin)' : 'Katalog Pakaian & Pesan Produk'}
               </h1>
               <p className="mt-2 text-xs sm:text-sm text-neutral-600 max-w-xl leading-relaxed">
-                Temukan pilihan pakaian berkualitas mulai dari kaos oversize, kemeja kasual, celana, hingga outerwear untuk melengkapi gayamu setiap hari.
+                {isAdmin 
+                  ? 'Kelola stok, harga, dan tambah produk baru ke dalam sistem toko.'
+                  : 'Temukan pilihan pakaian berkualitas, pilih gaya favoritmu, dan pesan langsung.'}
               </p>
             </div>
 
@@ -210,19 +223,21 @@ export default function HomePage() {
             ))}
           </div>
 
-          {/* Add Product Button */}
-          <button
-            onClick={() => {
-              setSelectedProduct(null);
-              setIsModalOpen(true);
-            }}
-            className="flex items-center justify-center gap-1.5 bg-neutral-900 hover:bg-neutral-800 text-white px-3.5 py-1.5 rounded-lg font-medium text-xs sm:text-sm transition-colors cursor-pointer shrink-0 shadow-2xs"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-            </svg>
-            <span>Tambah Produk</span>
-          </button>
+          {/* Tombol Tambah Produk (HANYA UNTUK ADMIN) */}
+          {isAdmin && (
+            <button
+              onClick={() => {
+                setSelectedProduct(null);
+                setIsModalOpen(true);
+              }}
+              className="flex items-center justify-center gap-1.5 bg-neutral-900 hover:bg-neutral-800 text-white px-3.5 py-1.5 rounded-lg font-medium text-xs sm:text-sm transition-colors cursor-pointer shrink-0 shadow-2xs"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+              </svg>
+              <span>Tambah Produk</span>
+            </button>
+          )}
         </div>
 
         {/* Filter Summary */}
@@ -286,6 +301,7 @@ export default function HomePage() {
               <ProductCart
                 key={p.id}
                 product={p}
+                isAdmin={isAdmin} // Kunci utama: Mengirimkan role admin
                 onAddToCart={() => handleAddToCart(p)}
                 onEdit={() => {
                   setSelectedProduct(p);
