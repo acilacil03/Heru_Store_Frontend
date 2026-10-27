@@ -29,40 +29,7 @@ export async function POST(req) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // 1. Coba upload ke Cloudinary jika akun sudah terkonfigurasi dengan benar
-    const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
-    const apiKey = process.env.CLOUDINARY_API_KEY;
-    const apiSecret = process.env.CLOUDINARY_API_SECRET;
-    const cloudinaryUrl = process.env.CLOUDINARY_URL;
-
-    const hasValidCloudinary =
-      (cloudName && apiKey && apiSecret && apiSecret !== apiKey) ||
-      (cloudinaryUrl && !cloudinaryUrl.includes('api_key:api_secret'));
-
-    if (hasValidCloudinary) {
-      try {
-        const { default: cloudinary, configureCloudinary } = await import('@/lib/cloudinary');
-        configureCloudinary();
-
-        const base64Data = buffer.toString('base64');
-        const dataUri = `data:${file.type || 'image/jpeg'};base64,${base64Data}`;
-
-        const result = await cloudinary.uploader.upload(dataUri, {
-          folder: 'cloth_studio/products',
-          resource_type: 'image',
-        });
-
-        return NextResponse.json({
-          message: 'Gambar berhasil diupload ke Cloudinary',
-          url: result.secure_url,
-          source: 'cloudinary',
-        });
-      } catch (cloudErr) {
-        console.warn('Upload Cloudinary gagal, otomatis menggunakan penyimpanan lokal:', cloudErr.message);
-      }
-    }
-
-    // 2. Simpan langsung secara lokal ke folder public/uploads (Langsung berhasil tanpa perlu konfigurasi!)
+    // Simpan lokal ke folder public/uploads
     const uploadDir = path.join(process.cwd(), 'public', 'uploads');
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });

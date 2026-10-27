@@ -2,12 +2,15 @@
   "name": "project_mapil_crud",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "seed": "node scripts/seed.js"
+    "seed": "node scripts/seed.js",
+    "test-db": "node scripts/test-db.js",
+    "test-cloudinary": "node scripts/test-cloudinary.js"
   },
   "dependencies": {
     "cloudinary": "^2.11.0",

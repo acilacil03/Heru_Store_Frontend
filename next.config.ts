@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
   experimental: {
     agentFeedback: true,
   },
+  allowedDevOrigins: ['127.0.0.1'],
   cacheComponents: true,
   partialPrefetching: true,
   turbopack: {
@@ -30,8 +31,12 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [
       {
-        source: "/api/:path((?!upload|cloudinary-config).*)",
+        source: "/api/:path*",
         destination: `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/:path*`,
+      },
+      {
+        source: "/api/internal/:path*",
+        destination: "/api/internal/:path*",
       },
     ];
   },
